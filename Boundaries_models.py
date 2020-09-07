@@ -2,6 +2,41 @@ import numpy as np
 import pandas as pd
 
 
+
+def Fairfield1971(x,args):
+    
+    ''' 
+    Fairfield 1971 : Magnetopause and Bow shock models. Give positions of the boudaries in plans (XY) with Z=0 and (XZ) with Y=0.
+    function's arguments :
+        - x :  X axis (array) in Re (earth radii)
+        - args : coefficients Aij are determined from many boundary crossings and they depend on upstream conditions. 
+          
+        --> Default parameter for the bow shock and the magnetopause respectively are :
+            default_bs_fairfield = [0.0296,-0.0381,-1.28,45.644,-652.1]
+            default_mp_fairfield = [-0.0942,0.3818,0.498,17.992,-248.12]
+            
+     return : DataFrame (Pandas) with the position (X,Y,Z) in Re of the wanted boudary to plot (XY) and (XZ) plans.
+    '''
+    
+    
+    A,B,C,D,E = args[0],args[1],args[2],args[3],args[4]
+    
+    a = 1
+    b = A*x + C
+    c = B*x**2 + D*x + E
+    
+    delta = b**2-4*a*c
+    
+    ym = (-b - np.sqrt(delta))/(2*a)
+    yp = (-b + np.sqrt(delta))/(2*a)
+    
+    pos=pd.DataFrame({'X' : np.concatenate([x, x[::-1]]),
+                      'Y' : np.concatenate([yp, ym[::-1]]),
+                      'Z' : np.concatenate([yp, ym[::-1]]),})        
+    
+    return pos.dropna()
+
+
 def Formisano1979(x, args):
     
     '''
@@ -40,11 +75,13 @@ def Formisano1979(x, args):
     zp = (-b_z + np.sqrt(delta_z))/(2*a_z)
     
     
-    pos=pd.DataFrame({'X' : np.concatenate([x, x]),
-                      'Y' : np.concatenate([yp, ym]),
-                      'Z' : np.concatenate([zp, zm]),})        
+    pos=pd.DataFrame({'X' : np.concatenate([x, x[::-1]]),
+                      'Y' : np.concatenate([yp, ym[::-1]]),
+                      'Z' : np.concatenate([zp, zm[::-1]]),})        
     
     return pos.dropna()
+
+
 
 
 
@@ -119,7 +156,7 @@ def MP_Shue1998(Pd, Bz):
     r0 = (10.22+1.29*np.tanh(0.184*(Bz+8.14)))*Pd**(-1./6.6)
 
     a = (0.58-0.007*Bz)*(1+0.024*np.log(Pd))
-    theta = np.arange( -np.pi, np.pi+0.01, 0.001)
+    theta = np.arange( -np.pi+0.01, np.pi-0.01, 0.001)
     #theta = np.arange( -np.pi/2, np.pi/2+0.01, 0.01)
 
     r = r0*(2./(1+np.cos(theta)))**a
