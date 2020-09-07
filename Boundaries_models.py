@@ -108,3 +108,28 @@ def BS_Jerab2005( Np, V, Ma, B, gamma=2.15 ):
     pos = pd.DataFrame({'X' : x , 'Y' : y, 'Z' : y}) 
     
     return pos.sort_values('Y')
+
+
+def MP_Shue1998(Pd, Bz):
+    ''' Shue 1998 Magnetopause model. Returns the MP distance for given
+    theta (r), dynamic pressure (in nPa) and Bz (in nT).
+    * theta: Angle from the x axis (model is cylindrical symmetry)
+    * PD: Dynamic Pressure in nPa
+    * Bz: z component of IMF in nT'''
+    r0 = (10.22+1.29*np.tanh(0.184*(Bz+8.14)))*Pd**(-1./6.6)
+
+    a = (0.58-0.007*Bz)*(1+0.024*np.log(Pd))
+    theta = np.arange( -np.pi, np.pi+0.01, 0.001)
+    #theta = np.arange( -np.pi/2, np.pi/2+0.01, 0.01)
+
+    r = r0*(2./(1+np.cos(theta)))**a
+
+    x = r*np.cos(theta)
+    y = r*np.sin(theta)
+    z = r*np.sin(theta)
+
+    pos=pd.DataFrame({'X' : x,
+                      'Y' : y,
+                      'Z' : z,})        
+    
+    return pos.dropna()
